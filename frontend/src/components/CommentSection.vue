@@ -15,7 +15,7 @@
 
 <script lang="ts">
 	import { defineComponent, ref, onMounted } from 'vue';
-	import axios from 'axios'
+	import api from '@/plugins/api';
 
 
 	interface Comment {
@@ -38,7 +38,7 @@
 
 			const fetchComments = async () => {
 				try {
-					const response = await axios.get(`http://localhost/api/tasks/${props.taskId}/comments`);
+					const response = await api.get(`http://localhost/api/tasks/${props.taskId}/comments`);
 					comments.value = response.data;
 				} catch (error) {
 					console.error('Error fetching comments', error);
@@ -48,7 +48,7 @@
 			const postComment = async () => {
 				try {
 				// For demo purposes, using a hard-coded user_id
-				await axios.post(`http://localhost/api/tasks/${props.taskId}/comments`, {
+				await api.post(`http://localhost/api/tasks/${props.taskId}/comments`, {
 				content: newComment.value,
 				user_id: 1
 				});

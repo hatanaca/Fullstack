@@ -14,7 +14,7 @@
 
 <script lang="ts">
 	import { defineComponent, ref, onMounted } from 'vue';
-	import axios from 'axios';
+	import api from '@/plugins/api';
 
 	interface Attachment {
 		id: number;
@@ -35,7 +35,7 @@
 			const attachments = ref<Attachment[]>([]);
 			const fetchAttachments = async () => {
 				try {
-					const response = await axios.get(`http://localhost/api/tasks/${props.taskId}`);
+					const response = await api.get(`http://localhost/api/tasks/${props.taskId}`);
 					attachments.value = response.data.attachments || [];
 				} catch (error) {
 					console.error("Error fetching attachments", error);
@@ -47,7 +47,7 @@
 					const formData = new FormData();
 					formData.append('file', target.files[0]);
 					try {
-						await axios.post(`http://localhost/api/tasks/${props.taskId}/attachments`, formData, { headers: { 'Content-Type': 'multipart/form-data'}
+						await api.post(`http://localhost/api/tasks/${props.taskId}/attachments`, formData, { headers: { 'Content-Type': 'multipart/form-data'}
 						});
 						fetchAttachments();
 					} catch (error) {

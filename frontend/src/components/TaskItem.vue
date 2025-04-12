@@ -11,7 +11,8 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import axios from 'axios';
+import api from '@/plugins/api';
+
 
 interface Task {
   id: number;
@@ -32,7 +33,7 @@ export default defineComponent({
     async toggleComplete() {
       try {
         const updatedTask = { ...this.task, completed: !this.task.completed };
-        await axios.put(`http://localhost/api/tasks/${this.task.id}`, updatedTask);
+        await apí.put(`http://localhost/api/tasks/${this.task.id}`, updatedTask);
         this.$emit('taskUpdated');
       } catch (error) {
         console.error('Error updating task', error);
@@ -40,7 +41,7 @@ export default defineComponent({
     },
     async deleteTask() {
       try {
-        await axios.delete(`http://localhost/api/tasks/${this.task.id}`);
+        await api.delete(`http://localhost/api/tasks/${this.task.id}`);
         this.$emit('taskDeleted');
       } catch (error) {
         console.error('Error deleting task', error);

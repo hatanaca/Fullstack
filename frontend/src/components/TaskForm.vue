@@ -17,7 +17,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive } from 'vue';
-import axios from 'axios';
+import api from '@/plugins/api';
 
 interface Task {
   title: string;
@@ -37,7 +37,7 @@ export default defineComponent({
 
     const createTask = async () => {
       try {
-        await axios.post('http://localhost/api/tasks', newTask);
+        await api.post('http://localhost/api/tasks', newTask);
         // Reset the form
         newTask.title = '';
         newTask.description = '';

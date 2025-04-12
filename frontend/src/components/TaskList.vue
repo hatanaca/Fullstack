@@ -14,8 +14,9 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
-import axios from 'axios';
 import TaskItem from './TaskItem.vue';
+import api from '@/plugins/api';
+
 import TaskForm from './TaskForm.vue';
 
 interface Task {
@@ -36,8 +37,8 @@ export default defineComponent({
 
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://localhost/api/tasks');
-        tasks.value = response.data;
+        const response = await api.get('/tasks');
+	tasks.value = response.data;
       } catch (error) {
         console.error('Error fetching tasks', error);
       }

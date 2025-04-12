@@ -28,7 +28,7 @@
 
 <script lang="ts">
 	import { defineComponent, onMounted, ref } from 'vue';
-	import axios from 'axios';
+	import api from '@/plugins/api';
 
 	interface User {
 		id:number;
@@ -43,7 +43,7 @@
 			const users = ref<User[]>([]);
 			const fetchUsers = async () => {
 				try {
-					const response = await axios.get('http://localhost/api/users');
+					const response = await api.get('http://localhost/api/users');
 					users.value = response.data;
 				} catch (error) {
 						console.error('Error fetching users', error);
@@ -51,14 +51,14 @@
 			};
 			const updateUser = async (user: User) => {
 				try {
-					await axios.put(`http://localhost/api/users/${user.id}`, user);
+					await api.put(`http://localhost/api/users/${user.id}`, user);
 				} catch (error) {
 					console.error('Error updating user', error);
 				}
 			};
 			const deleteUser = async (id: number) => {
 				try {
-					await axios.delete(`http://localhost/api/users/${id}`);
+					await api.delete(`http://localhost/api/users/${id}`);
 					fetchUsers();
 				} catch (error) {
 					console.error('Error deleting user', error);
