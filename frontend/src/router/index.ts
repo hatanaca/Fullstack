@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-
+import { createRouter, createWebHistory } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router';
 import TaskList from '../components/TaskList.vue';
 import TaskDetail from '../components/TaskDetail.vue';
 import UserManagement from '../components/UserManagement.vue';
