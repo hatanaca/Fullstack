@@ -20,7 +20,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
 # Copia os arquivos
-COPY . .
+COPY . /var/www
 
 # Instala dependências Laravel
 RUN composer install
@@ -30,5 +30,6 @@ RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www
 
 EXPOSE 9000
-CMD ["php-fpm", "-F"]
+CMD ["php-fpm"]
+
 

@@ -5,10 +5,9 @@ services:
     container_name: laravel-app
     volumes:
       - ./backend:/var/www
+      - /var/www/vendor
     depends_on:
       - db
-    ports:
-      - "9000:9000"
     networks:
       - app-network
 
@@ -35,7 +34,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5431:5431"
+      - "5432:5432"
     networks:
       - app-network
 
