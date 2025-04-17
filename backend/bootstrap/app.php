@@ -12,9 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->append(HandleCors::class);
+        // Adicione o middleware CORS usando 'prepend' para prioridade
+        $middleware->prepend(HandleCors::class); // <--- Alterado de 'append' para 'prepend'
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
-
