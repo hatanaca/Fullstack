@@ -45,7 +45,7 @@ export default  defineComponent({
 		//Typescript genericType, ref => reactive variable, start's with null
 		const fetchTask = async () => {
 			try {
-				const response = await api.get(`http://localhost/api/tasks/${route.params.id}`)
+				const response = await api.get(`/tasks/${route.params.id}`)
 				task.value = response.data;
 				} catch (error) {
 				console.error('Error fetching task detail', error);

@@ -37,7 +37,7 @@ export default defineComponent({
 
     const createTask = async () => {
       try {
-        await api.post('http://localhost/api/tasks', newTask);
+        await api.post('/tasks', newTask);
         // Reset the form
         newTask.title = '';
         newTask.description = '';

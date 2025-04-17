@@ -33,7 +33,7 @@ export default defineComponent({
     async toggleComplete() {
       try {
         const updatedTask = { ...this.task, completed: !this.task.completed };
-        await apí.put(`http://localhost/api/tasks/${this.task.id}`, updatedTask);
+        await apí.put(`/tasks/${this.task.id}`, updatedTask);
         this.$emit('taskUpdated');
       } catch (error) {
         console.error('Error updating task', error);
@@ -41,7 +41,7 @@ export default defineComponent({
     },
     async deleteTask() {
       try {
-        await api.delete(`http://localhost/api/tasks/${this.task.id}`);
+        await api.delete(`/tasks/${this.task.id}`);
         this.$emit('taskDeleted');
       } catch (error) {
         console.error('Error deleting task', error);

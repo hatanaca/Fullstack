@@ -12,8 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Adicione o middleware CORS usando 'prepend' para prioridade
-        $middleware->prepend(HandleCors::class); // <--- Alterado de 'append' para 'prepend'
+        // Adicione esta linha para registrar o middleware "access.control":
+        $middleware->alias([
+            'access.control' => \App\Http\Middleware\AccessControl::class,
+        ]);
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -38,7 +38,7 @@
 
 			const fetchComments = async () => {
 				try {
-					const response = await api.get(`http://localhost/api/tasks/${props.taskId}/comments`);
+					const response = await api.get(`/tasks/${props.taskId}/comments`);
 					comments.value = response.data;
 				} catch (error) {
 					console.error('Error fetching comments', error);
@@ -48,7 +48,7 @@
 			const postComment = async () => {
 				try {
 				// For demo purposes, using a hard-coded user_id
-				await api.post(`http://localhost/api/tasks/${props.taskId}/comments`, {
+				await api.post(`/tasks/${props.taskId}/comments`, {
 				content: newComment.value,
 				user_id: 1
 				});

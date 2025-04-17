@@ -31,7 +31,7 @@
 			const newProject = ref({name: '', description: '' });
 			const fetchProjects = async () => {
 				try {
-				const response = await api.get('http://localhost/api/projects');
+				const response = await api.get('/projects');
 				projects.value = response.data;
 				} catch (error) {
 				console.log('Error fetching projects', error)
@@ -39,7 +39,7 @@
 			};
 			const createProject = async () => {
 				try {
-				await api.post('http://localhost/api/projects', newProject.value);
+				await api.post('/projects', newProject.value);
 				newProject.value = {name: '', description: '' };
 				fetchProjects();
 				} catch (error) {
