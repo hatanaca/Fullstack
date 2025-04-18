@@ -33,7 +33,7 @@ export default defineComponent({
     async toggleComplete() {
       try {
         const updatedTask = { ...this.task, completed: !this.task.completed };
-        await apí.put(`/tasks/${this.task.id}`, updatedTask);
+        await api.put(`/tasks/${this.task.id}`, updatedTask);
         this.$emit('taskUpdated');
       } catch (error) {
         console.error('Error updating task', error);
