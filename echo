@@ -1,8 +1,0 @@
-root        1259  0.0  1.2 2797492 84460 ?       Ssl  11:18   0:01 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
-root       16847  0.0  0.0 1745036 5548 ?        Sl   12:35   0:00 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 5173 -container-ip 172.20.0.3 -container-port 5173 -use-listen-fd
-root       16848  0.0  0.0 1671304 5592 ?        Sl   12:35   0:00 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 5432 -container-ip 172.20.0.2 -container-port 5432 -use-listen-fd
-root       16862  0.0  0.0 1671304 5720 ?        Sl   12:35   0:00 /usr/bin/docker-proxy -proto tcp -host-ip :: -host-port 5432 -container-ip 172.20.0.2 -container-port 5432 -use-listen-fd
-root       16863  0.0  0.0 1745036 5812 ?        Sl   12:35   0:00 /usr/bin/docker-proxy -proto tcp -host-ip :: -host-port 5173 -container-ip 172.20.0.3 -container-port 5173 -use-listen-fd
-root       17064  0.0  0.0 1671304 5936 ?        Sl   12:35   0:00 /usr/bin/docker-proxy -proto tcp -host-ip 0.0.0.0 -host-port 8080 -container-ip 172.20.0.5 -container-port 80 -use-listen-fd
-root       17072  0.0  0.0 1745036 5868 ?        Sl   12:35   0:00 /usr/bin/docker-proxy -proto tcp -host-ip :: -host-port 8080 -container-ip 172.20.0.5 -container-port 80 -use-listen-fd
-ThiagoH+   17424  0.0  0.0   4000  2036 pts/0    S+   12:36   0:00 grep --color=auto docker

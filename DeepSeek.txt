@@ -1,0 +1,306 @@
+server {
+    listen 80;
+    server_name localhost;
+    root /var/www/public;
+    index index.php index.html;
+    
+    # Adicionar log para debug
+    error_log /var/log/nginx/error.log debug;
+    
+    # Location específico para API com CORS
+    location /api {
+        if ($request_method = 'OPTIONS') {
+        	add_header 'Access-Control-Allow-Origin' 'http://localhost:5173' always;
+        	add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+        	add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, X-Requested-With' always;
+        	add_header 'Access-Control-Allow-Credentials' 'true' always;
+        	add_header 'Content-Type' 'text/plain charset=UTF-8';
+        	add_header 'Content-Length' 0;
+        return 204;
+    }
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+    
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+    
+    location ~ \.php$ {
+        fastcgi_pass app:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+        
+        # Adicionar cabeçalhos CORS aqui também
+        add_header 'Access-Control-Allow-Origin' 'http://localhost:5173' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
+    }
+}
+<?php
+// routes/api.php
+
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\PingController;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\ProjectController;
+
+Route::get('/ping', function () {
+    return response()->json(['message' => 'pong']);
+});
+
+
+//tasks routes
+Route::get('/tasks', [TaskController::class, 'index']);
+Route::post('/tasks', [TaskController::class, 'store']);
+Route::get('/tasks/{id}', [TaskController::class, 'show'])->where('id', '[0-9]+');
+Route::put('/tasks/{id}', [TaskController::class, 'update'])->where('id', '[0-9]+');
+Route::delete('/tasks/{id}', [TaskController::class, 'destroy'])->where('id', '[0-9]+');
+
+
+//Comments routes for task
+Route::get('/tasks/{taskId}/comments', [CommentController::class, 'index']);
+Route::post('/tasks/{taskId}/comments', [CommentController::class, 'store']);
+
+
+//File attachments for task
+Route::post('/tasks/{taskId}/attachments', [AttachmentController::class, 'store']);
+
+//Project routes
+Route::get('/projects', [ProjectController::class, 'index']);
+Route::post('/projects', [ProjectController::class, 'store']);
+
+
+//User management routes protected by acess control middleware
+Route::middleware('access.control:admin')->group(function () {
+	Route::get('/users', [UserController::class, 'index']);
+	Route::put('/users/{id}', [UserController::class, 'update']);
+	Route::delete('/users/{id}', [UserController::class, 'destroy']);
+});
+
+
+<?php
+
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
+
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+
+        $middleware->prepend(\App\Http\Middleware\Cors::class);
+
+        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+
+        $middleware->alias([
+            'access.control' => \App\Http\Middleware\AccessControl::class,
+        ]);
+        $middleware->append(\App\Http\Middleware\LogRequests::class);
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
+    })->create();
+<?php
+
+return [
+    'paths' => ['*'], // Habilita CORS para todas as rotas
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    'allowed_origins' => ['http://localhost:5173'],
+    'allowed_origins_patterns' => [],
+    'allowed_headers' => ['Content-Type', 'Authorization', 'X-Requested-With'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => true,
+];
+<?php
+// app/Http/Middleware/Cors.php
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class Cors
+{
+    public function handle(Request $request, Closure $next)
+    {
+        $response = $next($request);
+
+        // Forçar cabeçalhos CORS em todas as respostas
+        $response->header('Access-Control-Allow-Origin', 'http://localhost:5173');
+        $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        $response->header('Access-Control-Allow-Credentials', 'true');
+
+        return $response;
+    }
+}
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider; // Correção aqui
+use Illuminate\Support\Facades\Route;
+
+class RouteServiceProvider extends ServiceProvider // Herda da classe correta
+{
+    protected $namespace = 'App\Http\Controllers'; // Define o namespace
+
+    public function boot(): void
+    {
+        $this->configureRateLimiting();
+
+        // Carrega as rotas
+        $this->routes(function () {
+            Route::middleware('api')
+                ->prefix('api')
+                ->namespace($this->namespace)
+                ->group(base_path('routes/api.php'));
+        });
+
+        parent::boot(); // Chama o boot() da classe pai
+    }
+
+    protected function configureRateLimiting(): void
+    {
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+    }
+}
+* Host localhost:8080 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+*   Trying [::1]:8080...
+* Connected to localhost (::1) port 8080
+* using HTTP/1.x
+> GET /api/tasks HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/8.13.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Server: nginx/1.27.4
+< Date: Sun, 20 Apr 2025 14:46:12 GMT
+< Content-Type: text/html; charset=UTF-8
+< Transfer-Encoding: chunked
+< Connection: keep-alive
+< X-Powered-By: PHP/8.2.28
+< Access-Control-Allow-Origin: http://localhost:5173
+< Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+< Access-Control-Allow-Headers: Content-Type, Authorization
+< 
+
+// api.ts
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost/api',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  // Adicionar isto para debug
+  withCredentials: true
+});
+
+// Adicionar interceptores para debug
+api.interceptors.request.use(request => {
+  console.log('Starting Request', request);
+  return request;
+});
+
+api.interceptors.response.use(
+  response => {
+    console.log('Response:', response);
+    return response;
+  },
+  error => {
+    console.log('Error Response:', error.response);
+    return Promise.reject(error);
+  }
+);
+
+export default api;
+<template>
+  <div class="task-item">
+    <h3 :class="{ completed: task.completed }">{{ task.title }}</h3>
+    <p>{{ task.description }}</p>
+    <button @click.stop="toggleComplete">
+      {{ task.completed ? 'Undo' : 'Complete' }}
+    </button>
+    <button @click.stop="deleteTask">Delete</button>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+import  api  from '@/plugins/api'; // 👈 Adicione chaves {}
+
+interface Task {
+  id: number;
+  title: string;
+  description: string;
+  completed: boolean;
+}
+
+export default defineComponent({
+  name: 'TaskItem',
+  props: {
+    task: {
+      type: Object as PropType<Task>,
+      required: true
+    }
+  },
+  methods: {
+    async toggleComplete() {
+      try {
+        const updatedTask = { ...this.task, completed: !this.task.completed };
+        await api.put(`/tasks/${this.task.id}`, updatedTask); // ✅
+        this.$emit('taskUpdated');
+      } catch (error) {
+        console.error('Error updating task', error);
+      }
+    },
+    async deleteTask() {
+      try {
+        await api.delete(`/tasks/${this.task.id}`); // ✅
+        this.$emit('taskDeleted');
+      } catch (error) {
+        console.error('Error deleting task', error);
+      }
+    }
+  }
+});
+</script>
+
+<style scoped>
+.completed {
+  text-decoration: line-through;
+}
+.task-item {
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+button {
+  margin-right: 5px;
+}
+</style>
+

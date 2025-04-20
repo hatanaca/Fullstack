@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ActivityLog;
 
-class Task extends Model 
+class Task extends Model
 {
 	use HasFactory;
 
@@ -25,8 +25,14 @@ class Task extends Model
 		return $this->hasMany(Attachment::class);
 	}
 
-	protected static function booted() 
-	{
+	protected static function booted()
+    {
+        static::deleting(function ($task) {
+        // Deleta todos os comentários e attachments relacionados
+        $task->comments()->delete();
+        $task->attachments()->delete();
+        });
+
 		static::created(function ($task) {
 			ActivityLog::create([
 				'action' => 'created',

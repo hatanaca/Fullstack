@@ -44,13 +44,18 @@ export default  defineComponent({
 		const task = ref<Task | null>(null);
 		//Typescript genericType, ref => reactive variable, start's with null
 		const fetchTask = async () => {
-			try {
-				const response = await api.get(`/tasks/${route.params.id}`)
-				task.value = response.data;
-				} catch (error) {
-				console.error('Error fetching task detail', error);
-				}
-			};
+    if (!route.params.id || isNaN(Number(route.params.id))) { // Validação do ID
+        router.push({ name: 'TaskList' });
+        return;
+    }
+    try {
+        const response = await api.get(`/tasks/${route.params.id}`);
+        task.value = response.data;
+    } catch (error) {
+        console.error('Error fetching task detail', error);
+        router.push({ name: 'TaskList' }); // Redireciona se a task não existe
+    }
+};
 
 			onMounted(fetchTask);
 			const goBack = () => router.push({ name: 'TaskList' });

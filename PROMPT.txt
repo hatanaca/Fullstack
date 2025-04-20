@@ -1,0 +1,47 @@
+Resolver Problema de Comunicação entre Frontend e Backend
+
+Contexto:
+Estou enfrentando um problema de comunicação entre o frontend Vue.js e o backend Laravel.
+
+O frontend não está recebendo/respeitando a resposta do backend corretamente, gerando erros ou comportamentos inesperados.
+
+Detalhes do Problema:
+Problema com CORS
+    Descrição do Erro:
+[vite] connecting... client:743:9
+Starting Request 
+Object { transitional: {…}, adapter: (3) […], transformRequest: (1) […], transformResponse: (1) […], timeout: 0, xsrfCookieName: "XSRF-TOKEN", xsrfHeaderName: "X-XSRF-TOKEN", maxContentLength: -1, maxBodyLength: -1, env: {…}, … }
+api.ts:12:11
+XHRGET
+http://localhost/api/tasks
+CORS Missing Allow Origin
+
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost/api/tasks. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 404.
+[vite] connected. client:866:15
+Error Response: undefined api.ts:21:13
+Error fetching tasks 
+Object { stack: "AxiosError@http://localhost:5173/node_modules/.vite/deps/axios.js?v=99478206:380:18\nhandleError@http://localhost:5173/node_modules/.vite/deps/axios.js?v=99478206:1580:14\nEventHandlerNonNull*dispatchXhrRequest@http://localhost:5173/node_modules/.vite/deps/axios.js?v=99478206:1579:5\nxhr_default<@http://localhost:5173/node_modules/.vite/deps/axios.js?v=99478206:1517:10\ndispatchRequest@http://localhost:5173/node_modules/.vite/deps/axios.js?v=99478206:1992:10\npromise callback*_request@http://localhost:5173/node_modules/.vite/deps/axios.js?v=99478206:2195:27\nrequest@http://localhost:5173/node_modules/.vite/deps/axios.js?v=99478206:2104:25\nforEachMethodNoData/Axios.prototype[method]@http://localhost:5173/node_modules/.vite/deps/axios.js?v=99478206:2232:17\nwrap@http://localhost:5173/node_modules/.vite/deps/axios.js?v=99478206:8:15\nfetchTasks@http://localhost:5173/src/components/TaskList.vue:29:36\nsetup/<@http://localhost:5173/src/components/TaskList.vue:36:7\ncreateHook/</<@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:4901:44\ncallWithErrorHandling@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:2263:19\ncallWithAsyncErrorHandling@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:2270:38\ninjectHook/hook.__weh@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:4881:45\nflushPostFlushCbs@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:2448:28\nflushJobs@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:2490:22\npromise callback*queueFlush@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:2385:43\nqueuePostFlushCb@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:2399:3\nqueueEffectWithSuspense@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:9399:21\ndoWatch/baseWatchOptions.scheduler@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:8279:28\nwatch/effect2.scheduler<@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:2009:50\ntrigger@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:509:12\nendBatch@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:567:13\nnotify@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:827:7\ntrigger@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:801:10\nset value@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:1673:18\nfinalizeNavigation@http://localhost:5173/node_modules/.vite/deps/vue-router.js?v=99478206:2672:5\ncreateRouter/pushWithRedirect/<@http://localhost:5173/node_modules/.vite/deps/vue-router.js?v=99478206:2582:20\npromise callback*pushWithRedirect@http://localhost:5173/node_modules/.vite/deps/vue-router.js?v=99478206:2550:8\npush@http://localhost:5173/node_modules/.vite/deps/vue-router.js?v=99478206:2476:12\ninstall@http://localhost:5173/node_modules/.vite/deps/vue-router.js?v=99478206:2831:13\nuse@http://localhost:5173/node_modules/.vite/deps/chunk-U3LI7FBV.js?v=99478206:5940:18\n@http://localhost:5173/src/main.ts:6:5\n", message: "Network Error", name: "AxiosError", code: "ERR_NETWORK", config: {…}, request: XMLHttpRequest }
+TaskList.vue:32:17
+
+
+    Tecnologias Envolvidas:
+
+        Frontend: Vue.Js,Typescript, Axios
+
+        Backend: Laravel, Nginx, Docker-compose,Postgresql,
+
+    Endpoint Afetado:
+Comunicação com do front em geral com o back-end
+        
+    Passos já Tentados/arquivos editados:
+
+
+Me ajude a:
+
+    Identificar a causa raiz do problema (ex: erro de sintaxe, má configuração de headers, validação ausente).
+
+    Sugerir soluções específicas para corrigir a comunicação (ex: ajustar CORS, corrigir formato JSON, validar dados).
+
+    Recomendar boas práticas para debug (ex: usar console.log, ferramentas de inspeção de rede, testar endpoints isoladamente).
+
+

@@ -46,17 +46,20 @@ class TaskController extends Controller
 			Notification::send(\App\Models\User::all(), new TaskNotification("New task '{$task->title}' created."));
 			return response()->json($task, 201);
 		} catch (\Exception $e) {
-			return response()->json(['message' => 'Error creating task'], 508);
+			return response()->json(['message' => 'Error creating task'], 500);
 		}
 	}
 
 	public function show($id)
 	{
-		$task = Task::with(['comments', 'attachments'])->find($id);
-		if(!$task) {
-			return response()->json(['message' => 'Task not found'], 404);
-		}
-		return response()->json($task);
+		try {
+        $task = Task::with(['comments', 'attachments'])->findOrFail($id);
+        return response()->json($task);
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response()->json(['message' => 'Task not found'], 404);
+            } catch (\Exception $e) {
+        return response()->json(['message' => 'Error retrieving task'], 500);
+        }
 	}
 
 	// PUT /Api/tasks{id}
@@ -84,18 +87,23 @@ class TaskController extends Controller
 
 	//DELETE /api/tasks/{id}
 	public function destroy($id)
-	{
-		$task = Task::find($id);
-		if (!$task) {
-			return response()->json(['message' => 'Task not found'], 404);
-		}
-		try {
-			$task->delete();
-			return response()->json(['message' => 'Task deleted successfully']);
-		} catch (\Exception $e) {
-			return response()->json(['message' => 'Error deleting task'],500);
-		}
-	}
+{
+    // Validação numérica do ID (adicione esta parte)
+    if (!is_numeric($id)) {
+        return response()->json(['message' => 'ID inválido'], 400);
+    }
+
+    // Usar findOrFail para simplificar
+    try {
+        $task = Task::findOrFail($id);
+        $task->delete();
+        return response()->json(['message' => 'Task deleted successfully']);
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response()->json(['message' => 'Task not found'], 404);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Error deleting task'], 500);
+    }
+}
 }
 
 

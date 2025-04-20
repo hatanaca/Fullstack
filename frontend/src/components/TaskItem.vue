@@ -2,17 +2,16 @@
   <div class="task-item">
     <h3 :class="{ completed: task.completed }">{{ task.title }}</h3>
     <p>{{ task.description }}</p>
-    <button @click.stop="toggleComplete">
+    <button @click.prevent="toggleComplete">
       {{ task.completed ? 'Undo' : 'Complete' }}
     </button>
-    <button @click.stop="deleteTask">Delete</button>
+    <button @click.prevent="deleteTask">Delete</button>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import api from '@/plugins/api';
-
+import  api  from '@/plugins/api'; // 👈 Adicione chaves {}
 
 interface Task {
   id: number;
@@ -33,7 +32,7 @@ export default defineComponent({
     async toggleComplete() {
       try {
         const updatedTask = { ...this.task, completed: !this.task.completed };
-        await api.put(`/tasks/${this.task.id}`, updatedTask);
+        await api.put(`/tasks/${this.task.id}`, updatedTask); // ✅
         this.$emit('taskUpdated');
       } catch (error) {
         console.error('Error updating task', error);
@@ -41,7 +40,7 @@ export default defineComponent({
     },
     async deleteTask() {
       try {
-        await api.delete(`/tasks/${this.task.id}`);
+        await api.delete(`/tasks/${this.task.id}`); // ✅
         this.$emit('taskDeleted');
       } catch (error) {
         console.error('Error deleting task', error);
