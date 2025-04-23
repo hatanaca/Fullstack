@@ -26,7 +26,7 @@ class AttachmentController extends Controller
 			]);
 			return response()->json($attachment, 201);
 		} catch (\Exception $e) {
-			return response()->json(['message' => 'Error uploading file'], 505);
+			return response()->json(['message' => 'Error uploading file'], 500);
 		}
 	}
 }

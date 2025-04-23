@@ -42,18 +42,22 @@
 				}
 			};
 			const uploadFile = async (event: Event) => {
-				const target = event.target as HTMLInputElement;
-				if (target.files && target.files[0]) {
-					const formData = new FormData();
-					formData.append('file', target.files[0]);
-					try {
-						await api.post(`/tasks/${props.taskId}/attachments`, formData, { headers: { 'Content-Type': 'multipart/form-data'}
-						});
-						fetchAttachments();
-					} catch (error) {
-						console.error('Error uploading file', error);
-					}
-				}
+    				const target = event.target as HTMLInputElement;
+   				if (target.files && target.files[0]) {
+       					const formData = new FormData();
+        				formData.append('file', target.files[0]);
+        				try {
+            					// Adicionar tratamento de erro explícito
+            					const response = await api.post(
+                					`/tasks/${props.taskId}/attachments`, formData,
+                					{ headers: { 'Content-Type': 'multipart/form-data' } }
+            						);
+           					 attachments.value.push(response.data); // Atualizar lista localmente
+       					} catch (error) {
+            					console.error('Error uploading file', error);
+            					alert('Falha no upload. Verifique o console.'); // Feedback ao usuário
+        				}
+    				}
 			};
 			const downloadUrl = (filepath: string) => {
 				return `http://localhost/storage/${filepath}`;

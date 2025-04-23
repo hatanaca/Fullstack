@@ -3,8 +3,8 @@
 		<h3>Comments</h3>
 		<ul>
 			<li v-for="comment in comments" :key="comment.id">
-				<strong>{{ comment.user.name }}</strong>: {{ comment.content }}
-			</li>
+    <strong>{{ comment.user?.name || 'Usuário desconhecido' }}</strong>: {{ comment.content }}
+</li>
 		</ul>
 		<form @submit.prevent="postComment">
 			<textarea v-model="newComment" placeholder="Write a comment..."></textarea>
@@ -19,10 +19,12 @@
 
 
 	interface Comment {
-		id:number;
-		content: string;
-		user: { name: string };
-	}
+    		id: number;
+    		content: string;
+    		user?: { // <--- Adicione "?"
+        		name: string;
+    			};
+		}
 	
 	export default defineComponent({ 
 		name: 'CommentSection',
@@ -37,27 +39,29 @@
 			const newComment = ref('');
 
 			const fetchComments = async () => {
-				try {
-					const response = await api.get(`/tasks/${props.taskId}/comments`);
-					comments.value = response.data;
-				} catch (error) {
-					console.error('Error fetching comments', error);
-				}
-			};
+    try {
+        const response = await api.get(`/tasks/${props.taskId}/comments`);
+        comments.value = response.data || []; // Se response.data for undefined, usa array vazio
+    } catch (error) {
+        console.error('Error fetching comments', error);
+        comments.value = []; // Limpa a lista para evitar dados corrompidos
+        // Opcional: exibir mensagem de erro para o usuário
+    }
+};
 			
 			const postComment = async () => {
-				try {
-				// For demo purposes, using a hard-coded user_id
-				await api.post(`/tasks/${props.taskId}/comments`, {
-				content: newComment.value,
-				user_id: 1
-				});
-				newComment.value = '';
-				fetchComments();
-				} catch (error) {
-					console.error('Error posting comment', error);
-					}
-				};
+    try {
+        const response = await api.post(`/tasks/${props.taskId}/comments`, {
+            content: newComment.value,
+            user_id: 1
+        });
+        comments.value.push(response.data); // Adicionar comentário à lista local
+        newComment.value = '';
+    } catch (error) {
+        console.error('Error posting comment', error);
+        alert('Erro ao postar comentário. Verifique o console.');
+    }
+};
 
 				onMounted(fetchComments);
 				return { comments, newComment, postComment };

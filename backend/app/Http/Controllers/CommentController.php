@@ -11,11 +11,12 @@ class CommentController extends Controller
 {
 
 	// GET /api/tasks/{taskId}/comments
-	public function index($taskId)
-	{
-		$comments = Comment::where('task_id', $taskId)->with('user')->get();
-		return response()->json($comments);
-	}
+	public function index($taskId) {
+    $comments = Comment::where('task_id', $taskId)
+        ->with('user:id,name') // Carrega apenas id e nome
+        ->get();
+    return response()->json($comments);
+}
 
 
 	// POST /api/tasks/{taskId}/comments
@@ -29,10 +30,11 @@ class CommentController extends Controller
 
 
 		try {
-			$comment = Comment::create($validated);
-			return response()->json($comment, 201);
-		} catch (\Exception $e) {
-			return response()->json(['message' => 'Error creating comment'], 500);
-		}
+                $comment = Comment::create($validated);
+                $comment->load('user'); // Carregar relacionamento 'user' na resposta
+                return response()->json($comment, 201);
+            } catch (\Exception $e) {
+                return response()->json(['message' => 'Error creating comment'], 500);
+            }
 	}
 }
