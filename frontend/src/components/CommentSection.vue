@@ -3,7 +3,7 @@
 		<h3>Comments</h3>
 		<ul>
 			<li v-for="comment in comments" :key="comment.id">
-    <strong>{{ comment.user?.name || 'Usuário desconhecido' }}</strong>: {{ comment.content }}
+    <strong>{{ comment.user?.name || 'Usuário desconhecido' }}</strong>: {{ comment.content || 'Sem conteudo'  }}
 </li>
 		</ul>
 		<form @submit.prevent="postComment">
@@ -22,7 +22,8 @@
     		id: number;
     		content: string;
     		user?: { // <--- Adicione "?"
-        		name: string;
+        		id: number;
+			name: string;
     			};
 		}
 	

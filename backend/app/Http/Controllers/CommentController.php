@@ -18,23 +18,18 @@ class CommentController extends Controller
     return response()->json($comments);
 }
 
+    public function store(Request $request, $taskId)
+{
+    $validated = $request->validate([
+        'content' => 'required|string',
+        'user_id' => 'required|exists:users,id'
+    ]);
+    $validated['task_id'] = $taskId;
 
-	// POST /api/tasks/{taskId}/comments
-	public function store(Request $request, $taskId)
-	{
-		$validated = $request->validate([
-			'content' => 'required|string',
-			'user_id' => 'required|exists:users,id'
-		]);
-		$validated['task_id'] = $taskId;
+    $comment = Comment::create($validated);
+    $comment->load('user:id,name'); // 👈 Carrega o relacionamento com o usuário
 
-
-		try {
-                $comment = Comment::create($validated);
-                $comment->load('user'); // Carregar relacionamento 'user' na resposta
-                return response()->json($comment, 201);
-            } catch (\Exception $e) {
-                return response()->json(['message' => 'Error creating comment'], 500);
-            }
-	}
+    // Retorna o comentário completo com o objeto user incluído
+    return response()->json($comment, 201);
+    }
 }
