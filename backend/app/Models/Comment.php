@@ -32,6 +32,15 @@ class Comment extends Model
         ])
         ->select(['id', 'name']); // Carrega apenas campos essenciais
 }
+    public function toArray()
+    {
+        return [
+            'id' => $this->id,
+            'content' => $this->content,
+            'user' => $this->user, // Já está em camelCase!
+            'created_at' => $this->created_at->toDateTimeString(), // Opcional
+        ];
+    }
 
     protected static function booted()
     {
