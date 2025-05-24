@@ -17,6 +17,12 @@ class Comment extends Model
         'content'
     ];
 
+    // Ensure we can see complete error details
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     // Ensure proper loading of relationships
     protected $with = ['user'];
 
@@ -31,8 +37,7 @@ class Comment extends Model
         return $this->belongsTo(User::class)
             ->withDefault([ // Fallback se o usuário não existir
                 'id' => 0,
-                'name' => 'Usuário Deletado',
-                'email' => 'n/a'
+                'name' => 'Usuário Deletado'
             ]);
     }
 

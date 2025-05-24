@@ -74,9 +74,14 @@ export default defineComponent({
       if (!newComment.value.trim()) return;
       
       try {
+        // Add more console logs to see what's happening
+        console.log('Posting comment to:', `/tasks/${props.taskId}/comments`);
+        console.log('With data:', {
+          content: newComment.value,
+        });
+        
         const response = await api.post(`/tasks/${props.taskId}/comments`, {
           content: newComment.value,
-          user_id: 1 // Idealmente, pegue o ID do usuário atual da sua store
         });
         
         console.log('New comment response:', response.data);
@@ -87,11 +92,13 @@ export default defineComponent({
           newComment.value = '';
         } else {
           console.error('Invalid response from comment creation:', response.data);
-          alert('Erro ao postar comentário: resposta inválida do servidor');
+          alert('Erro ao postar comentário: ' + JSON.stringify(response.data));
         }
       } catch (error) {
         console.error('Error posting comment', error);
-        alert('Erro ao postar comentário');
+        console.error('Error details:', error.response?.data || 'No detailed error data');
+        alert('Erro ao postar comentário: ' + 
+              (error.response?.data?.message || error.message || 'Unknown error'));
       }
     };
 
