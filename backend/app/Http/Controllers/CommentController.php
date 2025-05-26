@@ -56,11 +56,19 @@ class CommentController extends Controller
     public function store(Request $request, $taskId)
     {
         try {
+            // VERIFICAR AUTENTICAÇÃO PRIMEIRO
+            if (!auth()->check()) {
+                Log::warning('Unauthenticated user trying to comment', ['task_id' => $taskId]);
+                return response()->json([
+                    'error' => 'Usuário não autenticado'
+                ], 401);
+            }
+
             // Log the incoming request for debugging
             Log::info('Comment request received', [
                 'task_id' => $taskId,
+                'user_id' => auth()->id(),
                 'request_data' => $request->all(),
-                'headers' => $request->headers->all()
             ]);
 
             // Verify task exists first
@@ -90,12 +98,12 @@ class CommentController extends Controller
                 ], 422);
             }
 
-            // Add the task ID
-            $validated['user_id'] = auth()->id(); // ✅ ID seguro
-            $validated['task_id'] = $taskId;
-
-            // Attempt to create the comment
-            $comment = Comment::create($validated);
+            // CRIAR O COMENTÁRIO COM TODOS OS DADOS NECESSÁRIOS
+            $comment = Comment::create([
+                'content' => $validated['content'],
+                'task_id' => $taskId,
+                'user_id' => auth()->id(), // GARANTIR que o user_id seja definido
+            ]);
 
             // Explicitly load the user relation
             $comment->load('user:id,name');
@@ -104,7 +112,7 @@ class CommentController extends Controller
             Log::info('Comment created successfully', [
                 'comment_id' => $comment->id,
                 'task_id' => $taskId,
-                'user_id' => $validated['user_id'],
+                'user_id' => auth()->id(),
                 'comment_data' => $comment->toArray()
             ]);
 
@@ -116,6 +124,7 @@ class CommentController extends Controller
             Log::error('Error creating comment', [
                 'exception_class' => get_class($e),
                 'task_id' => $taskId,
+                'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
