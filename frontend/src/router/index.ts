@@ -24,23 +24,26 @@ const router = createRouter({
   routes,
 });
 
-// Guard de navegação corrigido
+// Guard de navegação corrigido - SEM checkAuth()
 router.beforeEach(async (to, from, next) => {
   console.log('Router guard executando para:', to.path)
   
   if (to.meta.requiresAuth) {
     const auth = useAuth()
     
-    // Verifica autenticação
-    await auth.checkAuth()
+    // Usar apenas o estado atual, SEM fazer nova requisição
+    const hasToken = !!localStorage.getItem('authToken')
+    const hasUser = !!auth.currentUser
+    const isAuthenticated = hasToken && hasUser
     
-    console.log('Estado de autenticação:', {
-      isAuthenticated: auth.isAuthenticated,
-      user: auth.currentUser,
-      hasToken: !!localStorage.getItem('authToken')
+    console.log('Verificação de autenticação:', {
+      hasToken,
+      hasUser,
+      isAuthenticated,
+      user: auth.currentUser
     })
     
-    if (!auth.isAuthenticated) {
+    if (!isAuthenticated) {
       console.log('Usuário não autenticado, redirecionando para login')
       next('/login')
     } else {
@@ -48,6 +51,18 @@ router.beforeEach(async (to, from, next) => {
       next()
     }
   } else {
+    // Para rota /login, verificar se já está autenticado
+    if (to.path === '/login') {
+      const auth = useAuth()
+      const hasToken = !!localStorage.getItem('authToken')
+      const hasUser = !!auth.currentUser
+      
+      if (hasToken && hasUser) {
+        console.log('Usuário já autenticado, redirecionando para dashboard')
+        next('/')
+        return
+      }
+    }
     next()
   }
 })

@@ -117,12 +117,14 @@ const registerEmail = ref('')
 const registerPassword = ref('')
 const registerPasswordConfirmation = ref('')
 
-// Verificar se já está autenticado ao montar o componente
-onMounted(async () => {
+// REMOVIDO o checkAuth do onMounted para evitar loop
+onMounted(() => {
   console.log('Auth component mounted')
   
-  await auth.checkAuth()
+  // Limpar qualquer erro anterior
+  auth.clearError()
   
+  // Se já estiver autenticado (token válido em localStorage), redirecionar
   if (auth.isAuthenticated) {
     console.log('Usuário já autenticado, redirecionando...')
     router.push('/')
@@ -131,13 +133,21 @@ onMounted(async () => {
 
 const handleLogin = async () => {
   try {
-    console.log('Iniciando processo de login...')
+    console.log('=== INICIANDO LOGIN ===', new Date().toISOString())
+    console.log('Email:', loginEmail.value)
+    
+    // Limpar erros anteriores
+    auth.clearError()
     
     await auth.login(loginEmail.value, loginPassword.value)
     
+    console.log('Login concluído. IsAuthenticated:', auth.isAuthenticated)
+    
     if (auth.isAuthenticated) {
       console.log('Login realizado com sucesso, redirecionando...')
-      router.push('/')
+      await router.push('/')
+    } else {
+      console.error('Login não resultou em autenticação')
     }
   } catch (error) {
     console.error('Erro no processo de login:', error)
@@ -147,19 +157,27 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
   try {
+    console.log('=== INICIANDO REGISTRO ===', new Date().toISOString())
+    console.log('Dados:', {
+      name: registerName.value,
+      email: registerEmail.value,
+      passwordLength: registerPassword.value.length
+    })
+    
+    // Limpar erros anteriores
+    auth.clearError()
+    
     // Validação local das senhas
     if (registerPassword.value !== registerPasswordConfirmation.value) {
       auth.state.error = 'As senhas não coincidem'
       return
     }
 
-    if (registerPassword.value.length < 6) {
-      auth.state.error = 'A senha deve ter pelo menos 6 caracteres'
+    if (registerPassword.value.length < 8) {
+      auth.state.error = 'A senha deve ter pelo menos 8 caracteres'
       return
     }
 
-    console.log('Iniciando processo de registro...')
-    
     await auth.register(
       registerName.value,
       registerEmail.value,
@@ -167,9 +185,13 @@ const handleRegister = async () => {
       registerPasswordConfirmation.value
     )
     
+    console.log('Registro concluído. IsAuthenticated:', auth.isAuthenticated)
+    
     if (auth.isAuthenticated) {
       console.log('Registro realizado com sucesso, redirecionando...')
-      router.push('/')
+      await router.push('/')
+    } else {
+      console.error('Registro não resultou em autenticação')
     }
   } catch (error) {
     console.error('Erro no processo de registro:', error)

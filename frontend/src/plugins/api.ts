@@ -8,11 +8,10 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  timeout: 10000,
-  // withCredentials: true // Descomente se necessário para CORS/cookies
+  timeout: 10000
 });
 
-// Interceptor para adicionar token de autenticação
+// Interceptor de request → coloca o Bearer token se existir
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('authToken');
   if (token) {
@@ -21,58 +20,50 @@ api.interceptors.request.use(config => {
   return config;
 });
 
-// Interceptores de debug (apenas desenvolvimento)
-if (import.meta.env.DEV) {
-  api.interceptors.request.use(request => {
-    console.log('[API] Starting Request:', request);
-    return request;
-  });
-
-  api.interceptors.response.use(
-    response => {
-      console.log('[API] Response:', response);
-      return response;
-    },
-    error => {
-      console.log('[API] Error:', error.response || error.message);
-      return Promise.reject(error);
-    }
-  );
-}
+// Interceptor de response → deixa o Axios rejeitar 4xx/5xx
+api.interceptors.response.use(
+  response => response,
+  error => Promise.reject(error)
+);
 
 export default {
+  // Retorna exatamente o AuthResponse: { message, user, token }
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/login', { email, password });
-    return response.data;
+    const response = await api.post('/login', { email, password });
+    return response.data as AuthResponse;
   },
 
+  // Retorna exatamente o AuthResponse: { message, user, token }
   async register(
     name: string,
     email: string,
     password: string,
     password_confirmation: string
   ): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/register', {
+    const response = await api.post('/register', {
       name,
       email,
       password,
       password_confirmation
     });
-    return response.data;
+    return response.data as AuthResponse;
   },
 
+  // Logout não precisa retornar nada
   async logout(): Promise<void> {
     await api.post('/logout');
   },
 
+  // Retorna o usuário: { id, name, email }
   async me(): Promise<User> {
-    const response = await api.get<{ user: User }>('/me');
-    return response.data.user;
+    const response = await api.get('/me');
+    return response.data.user as User;
   },
 
-  // Método genérico para outras chamadas API
-  async request<T>(config: axios.AxiosRequestConfig): Promise<T> {
-    const response = await api.request<T>(config);
-    return response.data;
+  // Caso precise renovar token
+  async refreshToken(): Promise<{ message: string; token: string }> {
+    const response = await api.post('/refresh-token');
+    return response.data as { message: string; token: string };
   }
 };
+

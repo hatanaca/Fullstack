@@ -16,7 +16,9 @@ onMounted(async () => {
   console.log('App.vue mounted - verificando autenticação inicial...')
   
   try {
-    await auth.checkAuth()
+    // Use initAuth() que chama checkAuth() internamente
+    await auth.initAuth()
+    
     console.log('Verificação inicial de auth completa:', {
       isAuthenticated: auth.isAuthenticated,
       user: auth.currentUser
