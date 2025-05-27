@@ -1,0 +1,19 @@
+0 verbose cli /usr/bin/node /usr/bin/npm
+1 info using npm@11.4.1
+2 info using node@v23.11.1
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/ThiagoHatanaka/Documents/projetos/FULL-STACK/frontend/.npmrc
+5 silly config load:file:/home/ThiagoHatanaka/PROJETOS/FULL-STACK/.npmrc
+6 silly config load:file:/etc/npmrc
+7 verbose title npm fund
+8 verbose argv "fund"
+9 verbose logfile logs-max:10 dir:/home/ThiagoHatanaka/PROJETOS/FULL-STACK/.npm/_logs/2025-05-26T22_17_37_415Z-
+10 verbose logfile /home/ThiagoHatanaka/PROJETOS/FULL-STACK/.npm/_logs/2025-05-26T22_17_37_415Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:2197815296 maxSize:549453824 maxEntrySize:274726912
+13 verbose cwd /home/ThiagoHatanaka/Documents/projetos/FULL-STACK/frontend
+14 verbose os Linux 6.14.6-arch1-1
+15 verbose node v23.11.1
+16 verbose npm  v11.4.1
+17 verbose exit 0
+18 info ok

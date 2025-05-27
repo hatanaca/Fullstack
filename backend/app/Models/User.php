@@ -6,12 +6,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany; // Adicione esta linha
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Sanctum\HasApiTokens; // Adicionar esta linha
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens; // Adicionar HasApiTokens
 
     protected $fillable = [
         'name',
@@ -32,7 +33,7 @@ class User extends Authenticatable
         ];
     }
 
-    // Adicione este relacionamento
+    // Relacionamento com comentários
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
