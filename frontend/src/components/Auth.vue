@@ -101,8 +101,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-
-// IMPORTANTE: Caminho correto baseado na estrutura de pastas
 import { useAuth } from '../composables/useAuth'
 
 const auth = useAuth()
@@ -117,17 +115,16 @@ const registerEmail = ref('')
 const registerPassword = ref('')
 const registerPasswordConfirmation = ref('')
 
-// REMOVIDO o checkAuth do onMounted para evitar loop
 onMounted(() => {
   console.log('Auth component mounted')
   
   // Limpar qualquer erro anterior
   auth.clearError()
   
-  // Se já estiver autenticado (token válido em localStorage), redirecionar
-  if (auth.isAuthenticated) {
-    console.log('Usuário já autenticado, redirecionando...')
-    router.push('/')
+  // Se já estiver autenticado, redirecionar para tasks
+  if (auth.isAuthenticated.value) {
+    console.log('Usuário já autenticado, redirecionando para tasks...')
+    router.push('/tasks')
   }
 })
 
@@ -141,11 +138,11 @@ const handleLogin = async () => {
     
     await auth.login(loginEmail.value, loginPassword.value)
     
-    console.log('Login concluído. IsAuthenticated:', auth.isAuthenticated)
+    console.log('Login concluído. IsAuthenticated:', auth.isAuthenticated.value)
     
-    if (auth.isAuthenticated) {
-      console.log('Login realizado com sucesso, redirecionando...')
-      await router.push('/')
+    if (auth.isAuthenticated.value) {
+      console.log('Login realizado com sucesso, redirecionando para tasks...')
+      await router.push('/tasks')
     } else {
       console.error('Login não resultou em autenticação')
     }
@@ -169,12 +166,12 @@ const handleRegister = async () => {
     
     // Validação local das senhas
     if (registerPassword.value !== registerPasswordConfirmation.value) {
-      auth.state.error = 'As senhas não coincidem'
+      auth.setError('As senhas não coincidem')
       return
     }
 
     if (registerPassword.value.length < 8) {
-      auth.state.error = 'A senha deve ter pelo menos 8 caracteres'
+      auth.setError('A senha deve ter pelo menos 8 caracteres')
       return
     }
 
@@ -185,11 +182,11 @@ const handleRegister = async () => {
       registerPasswordConfirmation.value
     )
     
-    console.log('Registro concluído. IsAuthenticated:', auth.isAuthenticated)
+    console.log('Registro concluído. IsAuthenticated:', auth.isAuthenticated.value)
     
-    if (auth.isAuthenticated) {
-      console.log('Registro realizado com sucesso, redirecionando...')
-      await router.push('/')
+    if (auth.isAuthenticated.value) {
+      console.log('Registro realizado com sucesso, redirecionando para tasks...')
+      await router.push('/tasks')
     } else {
       console.error('Registro não resultou em autenticação')
     }

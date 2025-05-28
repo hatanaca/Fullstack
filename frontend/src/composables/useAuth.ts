@@ -1,9 +1,8 @@
 // src/composables/useAuth.ts
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import type { AuthResponse, User } from '../types/interfaces'
 import api from '../plugins/api'
 
-// Estado reativo global compartilhado entre todas as instâncias
 type AuthState = {
   user: User | null
   loading: boolean
@@ -16,6 +15,13 @@ const globalAuthState = reactive<AuthState>({
   error: ''
 })
 
+// Variáveis para controle de inicialização
+const isInitializing = ref(true)
+let resolveReady: (value: unknown) => void
+const readyPromise = new Promise((resolve) => {
+  resolveReady = resolve
+})
+
 export function useAuth() {
   /**
    * Faz login do usuário.
@@ -24,10 +30,9 @@ export function useAuth() {
     try {
       globalAuthState.loading = true
       globalAuthState.error = ''
-
+      
       console.log('Tentando fazer login...', { email })
       
-      // api.login já retorna response.data, que é { message, user, token }
       const { token, user } = await api.login(email, password)
       
       console.log('Token recebido:', token)
@@ -37,7 +42,6 @@ export function useAuth() {
         throw new Error('Token ou usuário não recebidos do servidor')
       }
 
-      // Grava token e atualiza estado
       localStorage.setItem('authToken', token)
       globalAuthState.user = user
       console.log('Login realizado com sucesso:', user)
@@ -75,7 +79,6 @@ export function useAuth() {
 
       console.log('Tentando registrar usuário...', { name, email })
       
-      // api.register já retorna response.data, que é { message, user, token }
       const { token, user } = await api.register(name, email, password, password_confirmation)
       
       console.log('Token recebido:', token)
@@ -85,7 +88,6 @@ export function useAuth() {
         throw new Error('Token ou usuário não recebidos do servidor')
       }
 
-      // Grava token e atualiza estado
       localStorage.setItem('authToken', token)
       globalAuthState.user = user
       console.log('Registro realizado com sucesso:', user)
@@ -113,7 +115,7 @@ export function useAuth() {
   }
 
   /**
-   * Faz logout do usuário, tanto no servidor quanto localmente.
+   * Faz logout do usuário.
    */
   const logout = async (): Promise<void> => {
     try {
@@ -132,14 +134,14 @@ export function useAuth() {
   }
 
   /**
-   * Verifica autenticação inicial a partir do token em localStorage.
+   * Verifica autenticação inicial.
    */
-  const checkAuth = async (): Promise<void> => {
+  const checkAuth = async (): Promise<boolean> => {
     const token = localStorage.getItem('authToken')
     if (!token) {
       globalAuthState.user = null
       globalAuthState.loading = false
-      return
+      return false
     }
 
     try {
@@ -147,30 +149,40 @@ export function useAuth() {
       globalAuthState.error = ''
 
       console.log('Verificando autenticação...')
-      // api.me já retorna response.data.user diretamente
       const user = await api.me()
       
       console.log('User recebido do /me:', user)
       
       globalAuthState.user = user
       console.log('Usuário autenticado:', user)
+      return true
     } catch (error) {
       console.error('Erro na verificação de auth:', error)
-      // Token inválido ou expirado
       localStorage.removeItem('authToken')
       globalAuthState.user = null
       globalAuthState.error = ''
+      return false
     } finally {
       globalAuthState.loading = false
     }
   }
 
-  const clearError = (): void => {
-    globalAuthState.error = ''
+  /**
+   * Inicializa a autenticação.
+   */
+  const initAuth = async (): Promise<void> => {
+    if (!isInitializing.value) return
+    
+    try {
+      await checkAuth()
+    } finally {
+      isInitializing.value = false
+      resolveReady(null)
+    }
   }
 
-  const initAuth = async (): Promise<void> => {
-    await checkAuth()
+  const clearError = (): void => {
+    globalAuthState.error = ''
   }
 
   return {
@@ -195,7 +207,11 @@ export function useAuth() {
     },
     get errorMessage(): string {
       return globalAuthState.error
-    }
+    },
+    get isInitializing(): boolean {
+      return isInitializing.value
+    },
+    ready: readyPromise
   }
 }
 

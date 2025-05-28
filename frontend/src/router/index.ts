@@ -4,19 +4,54 @@ import TaskList from '../components/TaskList.vue';
 import TaskDetail from '../components/TaskDetail.vue';
 import UserManagement from '../components/UserManagement.vue';
 import ProjectManagement from '../components/ProjectManagement.vue';
-//import HelloWorld from '../components/HelloWorld.vue'; // Importando o componente HelloWorld
 import Dashboard from '../views/Dashboard.vue';
-import Auth from '../components/Auth.vue'; // Auth está em src/components
-import { useAuth } from '../composables/useAuth'; // Import do composable
+import Auth from '../components/Auth.vue';
+import { useAuth } from '../composables/useAuth';
 
 const routes: Array<RouteRecordRaw> = [
-  { path: '/', component: Dashboard, meta: { requiresAuth: true } },		
-  { path: '/login', component: Auth },
-//  { path: '/', name: 'TaskList', component: TaskList },
-  { path: '/task/:id', name: 'TaskDetail', component: TaskDetail, props: true },
-  { path: '/users', name: 'UserManagement', component: UserManagement },
-  { path: '/projects', name: 'ProjectManagement', component: ProjectManagement },
-//  { path: '/hello', name: 'HelloWorld', component: HelloWorld }, // Nova rota para HelloWorld
+  { 
+    path: '/', 
+    component: Dashboard, 
+    meta: { requiresAuth: true } 
+  },
+  { 
+    path: '/tasks', 
+    name: 'TaskList', 
+    component: TaskList, 
+    meta: { requiresAuth: true } 
+  },
+  { 
+    path: '/login', 
+    name: 'Login',
+    component: Auth,
+    meta: { guest: true } 
+  },
+  { 
+    path: '/task/:id', 
+    name: 'TaskDetail', 
+    component: TaskDetail, 
+    props: true,
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/users', 
+    name: 'UserManagement', 
+    component: UserManagement,
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/projects', 
+    name: 'ProjectManagement', 
+    component: ProjectManagement,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: () => {
+      const auth = useAuth();
+      return auth.isAuthenticated ? '/tasks' : '/login';
+    }
+  }
 ];
 
 const router = createRouter({
@@ -24,47 +59,41 @@ const router = createRouter({
   routes,
 });
 
-// Guard de navegação corrigido - SEM checkAuth()
-router.beforeEach(async (to, from, next) => {
-  console.log('Router guard executando para:', to.path)
+// Guard de navegação melhorado com tratamento de inicialização
+router.beforeEach(async (to) => {
+  console.log(`🛡️ Router guard: ${to.path}`);
   
+  const auth = useAuth();
+  
+  // Se a rota requer autenticação
   if (to.meta.requiresAuth) {
-    const auth = useAuth()
+    console.log('🔒 Rota requer autenticação');
     
-    // Usar apenas o estado atual, SEM fazer nova requisição
-    const hasToken = !!localStorage.getItem('authToken')
-    const hasUser = !!auth.currentUser
-    const isAuthenticated = hasToken && hasUser
-    
-    console.log('Verificação de autenticação:', {
-      hasToken,
-      hasUser,
-      isAuthenticated,
-      user: auth.currentUser
-    })
-    
-    if (!isAuthenticated) {
-      console.log('Usuário não autenticado, redirecionando para login')
-      next('/login')
-    } else {
-      console.log('Usuário autenticado, permitindo acesso')
-      next()
+    // Se ainda está inicializando, esperar
+    if (auth.isInitializing) {
+      console.log('⏳ Auth ainda inicializando, aguardando...');
+      await auth.ready;
     }
-  } else {
-    // Para rota /login, verificar se já está autenticado
-    if (to.path === '/login') {
-      const auth = useAuth()
-      const hasToken = !!localStorage.getItem('authToken')
-      const hasUser = !!auth.currentUser
-      
-      if (hasToken && hasUser) {
-        console.log('Usuário já autenticado, redirecionando para dashboard')
-        next('/')
-        return
-      }
+    
+    // Se não está autenticado após inicialização
+    if (!auth.isAuthenticated) {
+      console.log('❌ Usuário não autenticado, redirecionando para login');
+      return '/login';
     }
-    next()
+    
+    console.log('✅ Usuário autenticado, permitindo acesso');
   }
-})
+  
+  // Para rotas de guest (como login)
+  if (to.meta.guest) {
+    if (auth.isAuthenticated) {
+      console.log('✅ Usuário já autenticado, redirecionando para tasks');
+      return '/tasks';
+    }
+  }
+  
+  console.log('✅ Navegação permitida');
+  return true;
+});
 
 export default router;
