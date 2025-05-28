@@ -1,12 +1,12 @@
 <?php
 
 return [
-    'paths' => ['*'], // Habilita CORS para todas as rotas
-    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    'paths' => ['api/*'], // Habilita CORS para todas as rotas da API
+    'allowed_methods' => ['*'], // Permite todos os métodos
     'allowed_origins' => ['http://localhost:5173'],
     'allowed_origins_patterns' => [],
-    'allowed_headers' => ['Content-Type', 'Authorization', 'X-Requested-With'],
+    'allowed_headers' => ['*'], // Permite todos os headers
     'exposed_headers' => [],
-    'max_age' => 0,
+    'max_age' => 86400, // 24 horas
     'supports_credentials' => true,
 ];

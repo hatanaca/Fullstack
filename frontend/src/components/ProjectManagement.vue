@@ -31,19 +31,25 @@
 			const newProject = ref({name: '', description: '' });
 			const fetchProjects = async () => {
 				try {
-				const response = await api.get('/projects');
-				projects.value = response.data;
+					console.log('Fetching projects...');
+					const response = await api.get('/projects');
+					console.log('Projects response:', response.data);
+					projects.value = response.data;
 				} catch (error) {
-				console.log('Error fetching projects', error)
+					console.error('Error fetching projects:', error);
+					console.error('Error details:', error.response?.data || 'No response data');
 				}
 			};
 			const createProject = async () => {
 				try {
-				await api.post('/projects', newProject.value);
-				newProject.value = {name: '', description: '' };
-				fetchProjects();
+					console.log('Creating project:', newProject.value);
+					const response = await api.post('/projects', newProject.value);
+					console.log('Create project response:', response.data);
+					newProject.value = {name: '', description: '' };
+					fetchProjects();
 				} catch (error) {
-				console.error('Error creating project', error);
+					console.error('Error creating project:', error);
+					console.error('Error details:', error.response?.data || 'No response data');
 				}
 			};
 

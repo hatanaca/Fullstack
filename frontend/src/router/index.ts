@@ -11,6 +11,7 @@ import { useAuth } from '../composables/useAuth';
 const routes: Array<RouteRecordRaw> = [
   { 
     path: '/', 
+    name: 'Dashboard',
     component: Dashboard, 
     meta: { requiresAuth: true } 
   },
@@ -27,7 +28,7 @@ const routes: Array<RouteRecordRaw> = [
     meta: { guest: true } 
   },
   { 
-    path: '/task/:id', 
+    path: '/tasks/:id', 
     name: 'TaskDetail', 
     component: TaskDetail, 
     props: true,
@@ -49,7 +50,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/:pathMatch(.*)*',
     redirect: () => {
       const auth = useAuth();
-      return auth.isAuthenticated ? '/tasks' : '/login';
+      return auth.isAuthenticated ? '/' : '/login';
     }
   }
 ];
@@ -65,30 +66,31 @@ router.beforeEach(async (to) => {
   
   const auth = useAuth();
   
+  // Se ainda está inicializando, esperar
+  if (auth.isInitializing) {
+    console.log('⏳ Auth ainda inicializando, aguardando...');
+    await auth.ready;
+  }
+  
   // Se a rota requer autenticação
   if (to.meta.requiresAuth) {
     console.log('🔒 Rota requer autenticação');
     
-    // Se ainda está inicializando, esperar
-    if (auth.isInitializing) {
-      console.log('⏳ Auth ainda inicializando, aguardando...');
-      await auth.ready;
-    }
-    
-    // Se não está autenticado após inicialização
-    if (!auth.isAuthenticated) {
-      console.log('❌ Usuário não autenticado, redirecionando para login');
+    // Verifica se tem token e usuário válido
+    if (!auth.isAuthenticated || !auth.currentUser?.id) {
+      console.log('❌ Usuário não autenticado ou inválido, redirecionando para login');
       return '/login';
     }
     
-    console.log('✅ Usuário autenticado, permitindo acesso');
+    console.log('✅ Usuário autenticado:', auth.currentUser);
   }
   
   // Para rotas de guest (como login)
   if (to.meta.guest) {
-    if (auth.isAuthenticated) {
-      console.log('✅ Usuário já autenticado, redirecionando para tasks');
-      return '/tasks';
+    // Se já está autenticado, redireciona para dashboard
+    if (auth.isAuthenticated && auth.currentUser?.id) {
+      console.log('✅ Usuário já autenticado, redirecionando para dashboard');
+      return '/';
     }
   }
   

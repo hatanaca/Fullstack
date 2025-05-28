@@ -4,9 +4,7 @@
     <TaskForm @taskCreated="fetchTasks" />
     <ul>
       <li v-for="task in tasks" :key="task.id">
-        <router-link :to="{ name: 'TaskDetail', params: { id: task.id } }">
-          <TaskItem :task="task" @taskDeleted="fetchTasks" @taskUpdated="fetchTasks" />
-        </router-link>
+        <TaskItem :task="task" @taskDeleted="fetchTasks" @taskUpdated="fetchTasks" />
       </li>
     </ul>
   </div>
@@ -15,16 +13,8 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import TaskItem from './TaskItem.vue';
-import api from '@/plugins/api';
-
 import TaskForm from './TaskForm.vue';
-
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  completed: boolean;
-}
+import api, { type Task } from '@/plugins/api';
 
 export default defineComponent({
   name: 'TaskList',
@@ -37,8 +27,10 @@ export default defineComponent({
 
     const fetchTasks = async () => {
       try {
-        const response = await api.get('/tasks');
-	tasks.value = response.data;
+        console.log('Buscando tasks...');
+        const tasksData = await api.getTasks();
+        console.log('Tasks recebidas:', tasksData);
+        tasks.value = tasksData;
       } catch (error) {
         console.error('Error fetching tasks', error);
       }
@@ -61,7 +53,5 @@ ul {
 li {
   margin: 10px 0;
   padding: 5px;
-  border-bottom: 1px solid #ccc;
 }
 </style>
-

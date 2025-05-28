@@ -84,6 +84,30 @@ class TaskController extends Controller
 		}
 	}
 
+	/**
+	 * Toggle the completion status of a task
+	 */
+	public function toggleCompletion($id)
+	{
+		try {
+			$task = Task::findOrFail($id);
+			$task->completed = !$task->completed;
+			$task->save();
+
+			// Notify about task status change
+			$status = $task->completed ? 'completed' : 'uncompleted';
+			Notification::send(
+				\App\Models\User::all(), 
+				new TaskNotification("Task '{$task->title}' marked as {$status}.")
+			);
+
+			return response()->json($task);
+		} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+			return response()->json(['message' => 'Task not found'], 404);
+		} catch (\Exception $e) {
+			return response()->json(['message' => 'Error toggling task completion'], 500);
+		}
+	}
 
 	//DELETE /api/tasks/{id}
 	public function destroy($id)

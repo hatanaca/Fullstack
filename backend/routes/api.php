@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tasks/{id}', [TaskController::class, 'show']);
     Route::put('/tasks/{id}', [TaskController::class, 'update']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
+    Route::put('/tasks/{id}/toggle', [TaskController::class, 'toggleCompletion']);
 
     // Rotas de comentários
     Route::get('/tasks/{taskId}/comments', [CommentController::class, 'index']);

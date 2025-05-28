@@ -18,18 +18,13 @@
 <script lang="ts">
 import { defineComponent, reactive } from 'vue';
 import api from '@/plugins/api';
-
-interface Task {
-  title: string;
-  description: string;
-  completed: boolean;
-}
+import type { TaskCreateData } from '@/plugins/api';
 
 export default defineComponent({
   name: 'TaskForm',
   emits: ['taskCreated'],
   setup(props, { emit }) {
-    const newTask = reactive<Task>({
+    const newTask = reactive<TaskCreateData>({
       title: '',
       description: '',
       completed: false
@@ -37,7 +32,7 @@ export default defineComponent({
 
     const createTask = async () => {
       try {
-        await api.post('/tasks', newTask);
+        await api.createTask(newTask);
         // Reset the form
         newTask.title = '';
         newTask.description = '';
