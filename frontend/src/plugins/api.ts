@@ -1,6 +1,6 @@
 // src/plugins/api.ts
 import axios from 'axios';
-import type { AuthResponse, User } from '../types/interfaces';
+import type { AuthResponse, User, Project, ProjectForm } from '../types/interfaces';
 
 // Adicionar interface para Task
 interface Task {
@@ -8,6 +8,7 @@ interface Task {
   title: string;
   description: string;
   completed: boolean;
+  user_id: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -125,39 +126,99 @@ export default {
 
   // === TASK METHODS ===
   
-  // Buscar todas as tasks do usuário
+  // Buscar todas as tasks do usuário atual
   async getTasks(): Promise<Task[]> {
-    const response = await api.get('/tasks');
-    return response.data as Task[];
+    try {
+      const response = await api.get('/tasks/my');
+      if (Array.isArray(response.data)) {
+        return response.data as Task[];
+      }
+      console.error('Resposta inválida do servidor:', response.data);
+      throw new Error('Erro ao buscar tarefas: formato de resposta inválido');
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
+    }
   },
 
-  // Buscar uma task específica
+  // Buscar uma task específica (verifica se pertence ao usuário atual)
   async getTask(id: number): Promise<Task> {
     const response = await api.get(`/tasks/${id}`);
-    return response.data as Task;
+    const task = response.data as Task;
+    
+    // Verifica se a task pertence ao usuário atual
+    const currentUser = await this.me();
+    if (task.user_id !== currentUser.id) {
+      throw new Error('Você não tem permissão para acessar esta tarefa.');
+    }
+    
+    return task;
   },
 
-  // Criar nova task
+  // Criar nova task (automaticamente associada ao usuário atual)
   async createTask(taskData: TaskCreateData): Promise<Task> {
     const response = await api.post('/tasks', taskData);
     return response.data as Task;
   },
 
-  // Atualizar task existente
+  // Atualizar task existente (verifica se pertence ao usuário atual)
   async updateTask(id: number, taskData: TaskUpdateData): Promise<Task> {
+    // Primeiro verifica se a task pertence ao usuário
+    await this.getTask(id);
     const response = await api.put(`/tasks/${id}`, taskData);
     return response.data as Task;
   },
 
-  // Deletar task
+  // Deletar task (verifica se pertence ao usuário atual)
   async deleteTask(id: number): Promise<void> {
+    // Primeiro verifica se a task pertence ao usuário
+    await this.getTask(id);
     await api.delete(`/tasks/${id}`);
   },
 
-  // Marcar task como concluída/não concluída
+  // Marcar task como concluída/não concluída (verifica se pertence ao usuário atual)
   async toggleTaskCompletion(id: number): Promise<Task> {
+    // Primeiro verifica se a task pertence ao usuário
+    await this.getTask(id);
     const response = await api.put(`/tasks/${id}/toggle`);
     return response.data as Task;
+  },
+
+  // === PROJECT METHODS ===
+  async getProjects(): Promise<Project[]> {
+    const response = await api.get('/projects');
+    return response.data as Project[];
+  },
+
+  async createProject(projectData: ProjectForm): Promise<Project> {
+    const response = await api.post('/projects', projectData);
+    return response.data as Project;
+  },
+
+  async updateProject(id: number, projectData: ProjectForm): Promise<Project> {
+    const response = await api.put(`/projects/${id}`, projectData);
+    return response.data as Project;
+  },
+
+  async deleteProject(id: number): Promise<void> {
+    await api.delete(`/projects/${id}`);
+  },
+
+  // === USER METHODS ===
+  async getUsers(): Promise<User[]> {
+    const response = await api.get('/users');
+    return response.data as User[];
+  },
+
+  async updateUser(id: number, userData: Partial<User>): Promise<User> {
+    const response = await api.put(`/users/${id}`, userData);
+    return response.data as User;
+  },
+
+  async deleteUser(id: number): Promise<void> {
+    await api.delete(`/users/${id}`);
   }
 };
 

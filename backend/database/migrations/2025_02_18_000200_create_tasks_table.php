@@ -9,20 +9,22 @@ class CreateTasksTable extends Migration
 	public function up()
 	{
 		Schema::create('tasks', function (Blueprint $table) {
-        $table->id();
-        $table->string('title');
-        $table->text('description')->nullable();
-        $table->boolean('completed')->default(false);
+			$table->id();
+			$table->foreignId('user_id')->constrained()->onDelete('cascade');
+			$table->string('title');
+			$table->text('description')->nullable();
+			$table->boolean('completed')->default(false);
 
-        // Adicione esta coluna para relacionamento com projetos
-        $table->foreignId('project_id')
-              ->nullable()
-              ->constrained('projects')
-              ->onDelete('set null');
+			// Adicione esta coluna para relacionamento com projetos
+			$table->foreignId('project_id')
+				  ->nullable()
+				  ->constrained('projects')
+				  ->onDelete('set null');
 
-        $table->timestamps();
-	    });
-    }
+			$table->timestamps();
+		});
+	}
+
 	public function down()
 	{
 		Schema::dropIfExists('tasks');

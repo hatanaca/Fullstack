@@ -3,7 +3,7 @@ import type { RouteRecordRaw } from 'vue-router';
 import TaskList from '../components/TaskList.vue';
 import TaskDetail from '../components/TaskDetail.vue';
 import UserManagement from '../components/UserManagement.vue';
-import ProjectManagement from '../components/ProjectManagement.vue';
+import ProjectManagement from '@/components/ProjectManagement.vue';
 import Dashboard from '../views/Dashboard.vue';
 import Auth from '../components/Auth.vue';
 import { useAuth } from '../composables/useAuth';

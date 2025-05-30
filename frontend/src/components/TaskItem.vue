@@ -18,22 +18,28 @@
         class="btn-complete"
         :class="{ 'btn-undo': task.completed }"
         @click="toggleComplete"
+        :disabled="loading"
       >
         <span class="btn-icon">{{ task.completed ? '↺' : '✓' }}</span>
-        {{ task.completed ? 'Undo' : 'Complete' }}
+        {{ task.completed ? 'Desfazer' : 'Concluir' }}
       </button>
-      <button class="btn-delete" @click="deleteTask">
+      <button 
+        class="btn-delete" 
+        @click="deleteTask"
+        :disabled="loading"
+      >
         <span class="btn-icon">×</span>
-        Delete
+        {{ loading ? 'Excluindo...' : 'Excluir' }}
       </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 import type { PropType } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/useAuth';
 import api, { type Task } from '@/plugins/api';
 
 export default defineComponent({
@@ -44,32 +50,80 @@ export default defineComponent({
       required: true
     }
   },
+  emits: ['taskDeleted', 'taskUpdated', 'error'],
   setup(props, { emit }) {
     const router = useRouter();
+    const { currentUser } = useAuth();
+    const loading = ref(false);
 
     const navigateToTask = () => {
+      if (!currentUser?.id) {
+        emit('error', 'Você precisa estar logado para ver os detalhes da tarefa.');
+        return;
+      }
+      
+      if (currentUser.id !== props.task.user_id) {
+        emit('error', 'Você não tem permissão para ver os detalhes desta tarefa.');
+        return;
+      }
+
       router.push({ name: 'TaskDetail', params: { id: props.task.id } });
     };
 
     const toggleComplete = async () => {
+      if (loading.value) return;
+      if (!currentUser?.id) {
+        emit('error', 'Você precisa estar logado para atualizar a tarefa.');
+        return;
+      }
+
+      if (currentUser.id !== props.task.user_id) {
+        emit('error', 'Você não tem permissão para atualizar esta tarefa.');
+        return;
+      }
+
+      loading.value = true;
+
       try {
         await api.toggleTaskCompletion(props.task.id);
         emit('taskUpdated');
-      } catch (error) {
-        console.error('Error updating task', error);
+      } catch (err) {
+        console.error('Error updating task:', err);
+        emit('error', 'Erro ao atualizar a tarefa. Por favor, tente novamente.');
+      } finally {
+        loading.value = false;
       }
     };
 
     const deleteTask = async () => {
+      if (loading.value) return;
+      if (!currentUser?.id) {
+        emit('error', 'Você precisa estar logado para excluir a tarefa.');
+        return;
+      }
+
+      if (currentUser.id !== props.task.user_id) {
+        emit('error', 'Você não tem permissão para excluir esta tarefa.');
+        return;
+      }
+
+      if (!confirm('Tem certeza que deseja excluir esta tarefa?')) return;
+
+      loading.value = true;
+
       try {
         await api.deleteTask(props.task.id);
         emit('taskDeleted');
-      } catch (error) {
-        console.error('Error deleting task', error);
+      } catch (err) {
+        console.error('Error deleting task:', err);
+        emit('error', 'Erro ao excluir a tarefa. Por favor, tente novamente.');
+      } finally {
+        loading.value = false;
       }
     };
 
     return {
+      loading,
       navigateToTask,
       toggleComplete,
       deleteTask
@@ -190,6 +244,14 @@ button {
 .btn-icon {
   font-size: 1.1em;
   line-height: 1;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  color: #9ca3af !important;
 }
 </style>
 
